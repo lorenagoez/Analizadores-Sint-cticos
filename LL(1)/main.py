@@ -40,30 +40,30 @@ def recursionIzquierda(diccionario):
 def first(regla):
   global reglas, noTerminales, terminalesUsr, diccionario, firsts
 
-  #Verifica si el primer simbolo es terminal o epsilon
+  # Verifica si el primer símbolo es terminal o epsilon
   if len(regla) != 0 and (regla is not None):
     if regla[0] in terminalesUsr:
       return regla[0]
     elif regla[0] == '#':
       return '#'
 
-  #Condición para los no terminales
+  # Condición para los no terminales
   if len(regla) != 0:
     if regla[0] in list(diccionario.keys()):
       # fres temporary list of result
       fres = []
       reglashRhs = diccionario[regla[0]]
 
-      #Se llama al first de cada regla
+      # Se llama al first de cada regla
       for itr in reglashRhs:
         indivRes = first(itr)
-        if type(indivRes) is list:
-          for i in indivRes:
-            fres.append(i)
-        else:
-          fres.append(indivRes)
+        if indivRes is not None:
+          if type(indivRes) is list:
+            fres.extend(indivRes)
+          else:
+            fres.append(indivRes)
 
-      #En caso de no haber un epsilon
+      # En caso de no haber un epsilon
       if '#' not in fres:
         return fres
       else:
@@ -71,7 +71,7 @@ def first(regla):
         fres.remove('#')
         if len(regla) > 1:
           nuevaRespuesta = first(regla[1:])
-          if nuevaRespuesta != None:
+          if nuevaRespuesta is not None:
             if type(nuevaRespuesta) is list:
               nuevaLista = fres + nuevaRespuesta
             else:
@@ -82,32 +82,48 @@ def first(regla):
         fres.append('#')
         return fres
 
+  # Si no se encuentra en el diccionario, devuelve una lista vacía
+  return []
 
-def follow(noTerminalFollow):
+
+def follow(noTerminalFollow, visited=None):
   global simboloInicial, reglas, noTerminales, terminalesUsr, diccionario, firsts, follows
 
-  #Para el símbolo inicial retorna "$"
+  if visited is None:
+    visited = set()
+
+  # Verifica si el no terminal ya ha sido visitado
+  if noTerminalFollow in visited:
+    return None
+
+  # Añade el no terminal a los visitados
+  visited.add(noTerminalFollow)
+
+  # Para el símbolo inicial retorna "$"
   solucion = set()
   if noTerminalFollow == simboloInicial:
-    # return '$'
     solucion.add('$')
 
-  #Recorre todas las reglas
+  # Recorre todas las reglas
   for actualnoTerminal in diccionario:
     rhs = diccionario[actualnoTerminal]
-    #Recorre todas las producciones de no terminales
+
+    # Recorre todas las producciones de no terminales
     for subregla in rhs:
       if noTerminalFollow in subregla:
         while noTerminalFollow in subregla:
           indexnoTerminal = subregla.index(noTerminalFollow)
           subregla = subregla[indexnoTerminal + 1:]
+
+          # Verifica si hay más símbolos en la subregla
           if len(subregla) != 0:
             res = first(subregla)
-            #Por si se encuentra un epsilon
+
+            # Por si se encuentra un epsilon
             if '#' in res:
               nuevaLista = []
               res.remove('#')
-              nuevaRes = follow(actualnoTerminal)
+              nuevaRes = follow(actualnoTerminal, visited)
               if nuevaRes != None:
                 if type(nuevaRes) is list:
                   nuevaLista = res + nuevaRes
@@ -116,18 +132,25 @@ def follow(noTerminalFollow):
               else:
                 nuevaLista = res
               res = nuevaLista
+            else:
+              res = None  # Asegurarse de que res sea None si no hay más símbolos en la subregla
           else:
             if noTerminalFollow != actualnoTerminal:
-              res = follow(actualnoTerminal)
+              res = follow(actualnoTerminal, visited)
+            else:
+              res = None  # Asegurarse de que res sea None si la subregla se reduce a epsilon
 
-          #Almacenar el follow
+          # Almacenar el follow
           if res is not None:
             if type(res) is list:
               for g in res:
                 solucion.add(g)
             else:
               solucion.add(res)
+
+  follows[noTerminalFollow] = solucion
   return list(solucion)
+
 
 
 def calcularFirst():
@@ -246,8 +269,6 @@ def crearTabla():
 
   if confirmacionLL:
     print("\nLa gramática es LL(1).\n")
-  else:
-    print("\nLa gramática no es LL(1).\n")
 
   return (matriz, confirmacionLL, terminales)
 
@@ -257,9 +278,8 @@ def analizarCadena(tabla, gramatica, listaTabla, cadena, terminales,
 
   #Más de una entrada en una celda de la tabla
   if gramatica == False:
-    return (f"\nInput String = " \
-           f"\"{cadena}\"\n" \
-           f"Grammar is not LL(1)")
+    mensaje = "La gramática no es LL(1)"
+    return mensaje
 
   #Stack bucffer
   stack = [simboloInicial, '$']
@@ -306,6 +326,8 @@ noTerminales = []  #Se almacenan los no terminales
 
 for i in range(1, len(reglas)):
   if reglas[i][0].isupper():
+    print("printeando...")
+    print(reglas[i][0])
     noTerminales.append(reglas[i][0])
 
 terminalesUsr = []  #Se almacenan los terminales
