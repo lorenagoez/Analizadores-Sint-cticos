@@ -6,7 +6,7 @@ def recursionIzquierda(diccionario):
     alpha = []  #Se almacenan las reglas con recursión izquierda
     beta = []  #Se almacenan las reglas sin recursión izquierda
 
-    todosrhs = diccionario[lhs]
+    todosrhs = diccionario[lhs] #Reglas de la producción actual #Lhs -> No terminal
     for subrhs in todosrhs:
       if subrhs[0] == lhs:
         alpha.append(subrhs[1:])
@@ -50,7 +50,7 @@ def first(regla):
   # Condición para los no terminales
   if len(regla) != 0:
     if regla[0] in list(diccionario.keys()):
-      # fres temporary list of result
+      
       fres = []
       reglashRhs = diccionario[regla[0]]
 
@@ -81,6 +81,7 @@ def first(regla):
           return nuevaLista
         fres.append('#')
         return fres
+  
 
   # Si no se encuentra en el diccionario, devuelve una lista vacía
   return []
@@ -326,8 +327,6 @@ noTerminales = []  #Se almacenan los no terminales
 
 for i in range(1, len(reglas)):
   if reglas[i][0].isupper():
-    print("printeando...")
-    print(reglas[i][0])
     noTerminales.append(reglas[i][0])
 
 terminalesUsr = []  #Se almacenan los terminales
