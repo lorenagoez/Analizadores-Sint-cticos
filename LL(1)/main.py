@@ -62,7 +62,7 @@ def first(regla):
             fres.extend(indivRes)
           else:
             fres.append(indivRes)
-
+            
       # En caso de no haber un epsilon
       if '#' not in fres:
         return fres
@@ -81,7 +81,6 @@ def first(regla):
           return nuevaLista
         fres.append('#')
         return fres
-  
 
   # Si no se encuentra en el diccionario, devuelve una lista vacía
   return []
@@ -106,6 +105,7 @@ def follow(noTerminalFollow, visited=None):
     solucion.add('$')
 
   # Recorre todas las reglas
+  #actualnoTerminal es el key
   for actualnoTerminal in diccionario:
     rhs = diccionario[actualnoTerminal]
 
@@ -186,7 +186,14 @@ def calcularFirst():
 
     #Se guardan los resultados
     firsts[y] = t
-
+  """
+  print("\nTabla First: ")
+  key_list = list(firsts.keys())
+  index = 0
+  for gg in firsts:
+    print(f"first({key_list[index]}) "f"=> {firsts.get(gg)}")
+    index += 1
+  """
 
 def calcularFollows():
   global simboloInicial, reglas, noTerminales,\
@@ -198,6 +205,15 @@ def calcularFollows():
       for g in solucion:
         conjuntoSolucion.add(g)
     follows[NT] = conjuntoSolucion
+
+  """
+  print("\nTabla follows: ")
+  key_list = list(follows.keys())
+  index = 0
+  for gg in follows:
+    print(f"follow({key_list[index]})"f" => {follows[gg]}")
+    index += 1
+  """
 
 
 def crearTabla():
@@ -225,7 +241,6 @@ def crearTabla():
     fila = []
     for y in terminales:
       fila.append('')
-    # of $ append one more col
     matriz.append(fila)
   confirmacionLL = True  #Clasifica la gramática
 
